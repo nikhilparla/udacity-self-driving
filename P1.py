@@ -135,8 +135,8 @@ def process_image(image):
     rho = 1
     theta = np.pi/180
     threshold = 15
-    min_line_len = 22
-    max_line_gap = 10
+    min_line_len = 10
+    max_line_gap = 2
     line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
        
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]),min_line_len, max_line_gap)
@@ -153,16 +153,17 @@ def process_image(image):
     
     for line in lines:
         for x1,y1,x2,y2 in line:
-            if((y2-y1)/(x2-x1) > 0):
+            if(((y2-y1)/(x2-x1) and (x1 > xsize/2) and (x2 > xsize/2)) > 0):
                 pos_slope_line_x.append(x1)
                 pos_slope_line_x.append(x2)
                 pos_slope_line_y.append(y1)
                 pos_slope_line_y.append(y2)
             else:
-                neg_slope_line_x.append(x1)
-                neg_slope_line_x.append(x2)
-                neg_slope_line_y.append(y1)
-                neg_slope_line_y.append(y2)
+                if((x1 < xsize/2) and (x2 < xsize/2)):
+                    neg_slope_line_x.append(x1)
+                    neg_slope_line_x.append(x2)
+                    neg_slope_line_y.append(y1)
+                    neg_slope_line_y.append(y2)
                 
     fit_left =  np.polyfit(pos_slope_line_x,pos_slope_line_y,1)
     fit_right = np.polyfit(neg_slope_line_x,neg_slope_line_y,1)
