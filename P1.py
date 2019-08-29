@@ -120,23 +120,36 @@ def process_image(image):
     blur_gray = gaussian_blur(gray, kernel_size)
         
     low_threshold = 100
-    high_threshold = 120
+    high_threshold = 150
     canny_out = canny(blur_gray, low_threshold, high_threshold)
-        
+    
+
+    
     # give the vertices of polygon in an array form
     ysize = image.shape[0]
     xsize = image.shape[1]
-    vertices = np.array([[[100, ysize], [450,325],[525,325], [850,ysize]]], dtype=np.int32)
+    bottom_left_x = 0.1*xsize
+    bottom_left_y = 0.9*ysize
+    top_left_x = 0.4*xsize
+    top_left_y = 0.6*ysize
+    bottom_right_x = 0.9*xsize
+    bottom_right_y = 0.9*ysize
+    top_right_x = 0.6*xsize
+    top_right_y = 0.6*ysize
+    vertices = np.array([[[bottom_left_x, bottom_left_y], [top_left_x,top_left_y],[top_right_x,top_right_y], [bottom_right_x,bottom_right_y]]], dtype=np.int32)
     #Region of interest
     masked_image = region_of_interest(canny_out, vertices)
+    
+    plt.imshow(masked_image, cmap='gray')
+    #plt.show()
     
     #Hough transforms
     img = masked_image
     rho = 1
     theta = np.pi/180
     threshold = 15
-    min_line_len = 10
-    max_line_gap = 2
+    min_line_len = 30
+    max_line_gap = 15
     line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
        
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]),min_line_len, max_line_gap)
@@ -172,11 +185,11 @@ def process_image(image):
     # ysize = fit_left[0] *x + fit_left[1]
     # x = ysize - fit_left[1] dividedby fit_left[0]
     xpos_bottomleft = (ysize - fit_left[1])/fit_left[0]
-    xpos_topleft = (325 - fit_left[1])/fit_left[0]
+    xpos_topleft = (0.6*ysize - fit_left[1])/fit_left[0]
     xpos_bottomrigt = (ysize - fit_right[1])/fit_right[0]
-    xpos_topright = (325 - fit_right[1])/fit_right[0]
-    cv2.line(line_img, (int(xpos_bottomleft), ysize), (int(xpos_topleft), 325), 255, 20)
-    cv2.line(line_img, (int(xpos_bottomrigt), ysize), (int(xpos_topright), 325), 255, 20)
+    xpos_topright = (0.6*ysize - fit_right[1])/fit_right[0]
+    cv2.line(line_img, (int(xpos_bottomleft), ysize), (int(xpos_topleft), int(top_left_y)), 255, 20)
+    cv2.line(line_img, (int(xpos_bottomrigt), ysize), (int(xpos_topright), int(top_right_y)), 255, 20)
     
     weighted_image = weighted_img(line_img, image, α=1, β=0.5, γ=0.)
     
@@ -218,3 +231,13 @@ clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4').subclip(0,5)
 #clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4')
 yellow_clip = clip2.fl_image(process_image)
 yellow_clip.write_videofile(yellow_output, audio=False)
+
+challenge_output = 'test_videos_output/challenge.mp4'
+## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+## To do so add .subclip(start_second,end_second) to the end of the line below
+## Where start_second and end_second are integer values representing the start and end of the subclip
+## You may also uncomment the following line for a subclip of the first 5 seconds
+##clip3 = VideoFileClip('test_videos/challenge.mp4').subclip(0,5)
+clip3 = VideoFileClip('test_videos/challenge.mp4').subclip(0,10)
+challenge_clip = clip3.fl_image(process_image)
+challenge_clip.write_videofile(challenge_output, audio=False)
