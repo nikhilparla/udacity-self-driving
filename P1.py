@@ -118,35 +118,27 @@ def process_image(image):
     gray = grayscale(image)
     kernel_size = 3
     blur_gray = gaussian_blur(gray, kernel_size)
-    #plt.imshow(blur_gray)
-    ##plt.show()
-    
+        
     low_threshold = 100
-    high_threshold = 150
+    high_threshold = 120
     canny_out = canny(blur_gray, low_threshold, high_threshold)
-    plt.imshow(canny_out,cmap='gray')
-    #plt.show()
- 
+        
     # give the vertices of polygon in an array form
     ysize = image.shape[0]
     xsize = image.shape[1]
     vertices = np.array([[[100, ysize], [450,325],[525,325], [850,ysize]]], dtype=np.int32)
     #Region of interest
     masked_image = region_of_interest(canny_out, vertices)
-    plt.imshow(masked_image,cmap='gray')
-    #plt.show()
- 
+    
     #Hough transforms
     img = masked_image
     rho = 1
     theta = np.pi/180
-    threshold = 10
-    min_line_len = 20
+    threshold = 15
+    min_line_len = 22
     max_line_gap = 10
     line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
-    plt.imshow(line_img)
-    #plt.show()
-    
+       
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]),min_line_len, max_line_gap)
     pos_slope_line_x = []
     pos_slope_line_y = []
@@ -187,16 +179,6 @@ def process_image(image):
     
     weighted_image = weighted_img(line_img, image, α=1, β=0.5, γ=0.)
     
-    #debug information
-    if (DEBUG_SW):
-        print('negative line x cords',sorted(neg_slope_line_x))
-        print('negative line y cords',sorted(neg_slope_line_y))
-        #print('slope , intercept ' , fit_left[0] , fit_left[1])
-        #print('xpos_bottomleft , xpos_topleft ' , xpos_bottomleft , xpos_topleft)
-    
-    plt.imshow(weighted_image)
-    #plt.show()
-
     result = weighted_image
     return result
     
@@ -208,10 +190,8 @@ img_save = 'test_images_output/'
 #TODO: Build your pipeline that will draw lane lines on the test_images
 #then save them to the test_images_output directory.
 for image in images:
-#    print(image)
     output_image = process_image(mpimg.imread("test_images/" + image))
     mpimg.imsave(img_save + image, output_image)
-#process_image(image)
     
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
@@ -223,6 +203,17 @@ white_output = 'test_videos_output/solidWhiteRight.mp4'
 ## Where start_second and end_second are integer values representing the start and end of the subclip
 ## You may also uncomment the following line for a subclip of the first 5 seconds
 ##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
-clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,10)
+clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,3)
 white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
 white_clip.write_videofile(white_output, audio=False)
+
+
+yellow_output = 'test_videos_output/solidYellowLeft.mp4'
+## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+## To do so add .subclip(start_second,end_second) to the end of the line below
+## Where start_second and end_second are integer values representing the start and end of the subclip
+## You may also uncomment the following line for a subclip of the first 5 seconds
+clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4').subclip(0,5)
+#clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4')
+yellow_clip = clip2.fl_image(process_image)
+yellow_clip.write_videofile(yellow_output, audio=False)
