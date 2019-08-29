@@ -188,6 +188,7 @@ def process_image(image):
 
 import os
 images = os.listdir("test_images/")
+img_save = 'test_images_output/'
 #image = mpimg.imread('test.jpg')
 
 # TODO: Build your pipeline that will draw lane lines on the test_images
@@ -196,8 +197,9 @@ for image in images:
     print('image = ', "test_images/" + image)
     print('This image is:', type(mpimg.imread("test_images/" + image)), 'with dimensions:', mpimg.imread("test_images/" + image).shape)
     output_image = process_image(mpimg.imread("test_images/" + image))
-    plt.imshow(output_image)
-    plt.show()
+    #plt.imshow(output_image)
+    #plt.show()
+    mpimg.imsave("test_images_output/" + image, output_image)
 
 
 # Import everything needed to edit/save/watch video clips
