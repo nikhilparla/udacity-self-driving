@@ -5,6 +5,8 @@ import numpy as np
 import cv2
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
+DEBUG_SW = 1
+
 #reading in an image
 #image = mpimg.imread('test_images/solidYellowCurve2.jpg')
 
@@ -86,7 +88,6 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     Returns an image with hough lines drawn.
     """
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
-    print('lines', lines)
     line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     draw_lines(line_img, lines)
     return line_img
@@ -140,8 +141,8 @@ def process_image(image):
     rho = 1
     theta = np.pi/180
     threshold = 10
-    min_line_len = 15
-    max_line_gap = 2
+    min_line_len = 20
+    max_line_gap = 10
     line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
     plt.imshow(line_img)
     #plt.show()
@@ -187,10 +188,11 @@ def process_image(image):
     weighted_image = weighted_img(line_img, image, α=1, β=0.5, γ=0.)
     
     #debug information
-    print('positive line x cords',sorted(pos_slope_line_x))
-    print('positive line y cords',sorted(pos_slope_line_y))
-    print('slope , intercept ' , fit_left[0] , fit_left[1])
-    print('xpos_bottomleft , xpos_topleft ' , xpos_bottomleft , xpos_topleft)
+    if (DEBUG_SW):
+        print('negative line x cords',sorted(neg_slope_line_x))
+        print('negative line y cords',sorted(neg_slope_line_y))
+        #print('slope , intercept ' , fit_left[0] , fit_left[1])
+        #print('xpos_bottomleft , xpos_topleft ' , xpos_bottomleft , xpos_topleft)
     
     plt.imshow(weighted_image)
     #plt.show()
@@ -215,12 +217,12 @@ for image in images:
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
     
-# white_output = 'test_videos_output/solidWhiteRight.mp4'
-# ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
-# ## To do so add .subclip(start_second,end_second) to the end of the line below
-# ## Where start_second and end_second are integer values representing the start and end of the subclip
-# ## You may also uncomment the following line for a subclip of the first 5 seconds
-# ##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
-# clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,10)
-# white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-# white_clip.write_videofile(white_output, audio=False)
+white_output = 'test_videos_output/solidWhiteRight.mp4'
+## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+## To do so add .subclip(start_second,end_second) to the end of the line below
+## Where start_second and end_second are integer values representing the start and end of the subclip
+## You may also uncomment the following line for a subclip of the first 5 seconds
+##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
+clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,10)
+white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+white_clip.write_videofile(white_output, audio=False)
