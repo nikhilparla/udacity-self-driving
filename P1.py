@@ -115,6 +115,7 @@ def process_image(image):
     # TODO: Build your pipeline that will draw lane lines on the test_images
 # then save them to the test_images_output directory.
 
+
     gray = grayscale(image)
     kernel_size = 3
     blur_gray = gaussian_blur(gray, kernel_size)
@@ -122,8 +123,6 @@ def process_image(image):
     low_threshold = 100
     high_threshold = 150
     canny_out = canny(blur_gray, low_threshold, high_threshold)
-    
-
     
     # give the vertices of polygon in an array form
     ysize = image.shape[0]
@@ -204,7 +203,10 @@ img_save = 'test_images_output/'
 #TODO: Build your pipeline that will draw lane lines on the test_images
 #then save them to the test_images_output directory.
 for image in images:
-    output_image = process_image(mpimg.imread("test_images/" + image))
+    input_image = mpimg.imread("test_images/" + image)
+	#printing out some stats and plotting
+    print('This image is:', image, 'with type ', type(input_image), 'with dimensions:', input_image.shape)
+    output_image = process_image(input_image)
     mpimg.imsave(img_save + image, output_image)
     
 # Import everything needed to edit/save/watch video clips
