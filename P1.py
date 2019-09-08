@@ -146,7 +146,7 @@ def process_image(image):
     img = masked_image
     rho = 1
     theta = np.pi/180
-    threshold = 15
+    threshold = 30
     min_line_len = 30
     max_line_gap = 15
     line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
@@ -168,25 +168,26 @@ def process_image(image):
     
     for line in lines:
         for x1,y1,x2,y2 in line:
-            if(((y2-y1)/(x2-x1) > 0) and (x1 > xsize/2) and (x2 > xsize/2)):
-                pos_slope_line_x.append(x1)
-                pos_slope_line_x.append(x2)
-                pos_slope_line_y.append(y1)
-                pos_slope_line_y.append(y2)
+            if((y2-y1)/(x2-x1) > 0):                     # if slope of the line is positive
+                if((x1 > xsize/2) and (x2 > xsize/2)):   # Remove outliers where slope is correct but not on the correct side of the image
+                    pos_slope_line_x.append(x1)
+                    pos_slope_line_x.append(x2)
+                    pos_slope_line_y.append(y1)
+                    pos_slope_line_y.append(y2)
             else:
-                if((x1 < xsize/2) and (x2 < xsize/2)):
+                if((x1 < xsize/2) and (x2 < xsize/2)):    # Remove outliers, same as above but for the other half of image
                     neg_slope_line_x.append(x1)
                     neg_slope_line_x.append(x2)
                     neg_slope_line_y.append(y1)
                     neg_slope_line_y.append(y2)
                 
-    fit_left =  np.polyfit(pos_slope_line_x,pos_slope_line_y,1)
+    fit_left =  np.polyfit(pos_slope_line_x,pos_slope_line_y,1)     # fit the points to a line
     fit_right = np.polyfit(neg_slope_line_x,neg_slope_line_y,1)
     
     # y =fit_left[0] * x + fit_left[1]
     # ysize = fit_left[0] *x + fit_left[1]
     # x = ysize - fit_left[1] dividedby fit_left[0]
-    xpos_bottomleft = (ysize - fit_left[1])/fit_left[0]
+    xpos_bottomleft = (ysize - fit_left[1])/fit_left[0]         # get the coordinates of the intersection points with the ROI edges
     xpos_topleft = (0.6*ysize - fit_left[1])/fit_left[0]
     xpos_bottomrigt = (ysize - fit_right[1])/fit_right[0]
     xpos_topright = (0.6*ysize - fit_right[1])/fit_right[0]
@@ -196,12 +197,12 @@ def process_image(image):
     weighted_image = weighted_img(line_img, image, α=1, β=0.5, γ=0.)
 
     plt.imshow(weighted_image, cmap='gray')
-    plt.show()
+    #plt.show()
     
     result = weighted_image
     return result
     
-"""
+
 import os
 images = os.listdir("test_images/")
 img_save = 'test_images_output/'
@@ -214,7 +215,7 @@ for image in images:
     print('This image is:', image, 'with type ', type(input_image), 'with dimensions:', input_image.shape)
     output_image = process_image(input_image)
     mpimg.imsave(img_save + image, output_image)
-"""    
+    
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
@@ -229,7 +230,7 @@ clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4")
 white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
 white_clip.write_videofile(white_output, audio=False)
 
-"""
+
 yellow_output = 'test_videos_output/solidYellowLeft.mp4'
 ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
 ## To do so add .subclip(start_second,end_second) to the end of the line below
@@ -249,4 +250,3 @@ challenge_output = 'test_videos_output/challenge.mp4'
 clip3 = VideoFileClip('test_videos/challenge.mp4').subclip(0,10)
 challenge_clip = clip3.fl_image(process_image)
 challenge_clip.write_videofile(challenge_output, audio=False)
-"""
